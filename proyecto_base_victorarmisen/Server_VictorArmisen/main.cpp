@@ -36,6 +36,14 @@ void TratarCliente(std::string nick, std::vector<std::string>* jugadores) {
 	}
 	mtxJugadores.unlock();
 }
+
+
+struct Peer {
+	sf::IpAddress ip;
+	unsigned short port;
+};
+
+
 int main() 
 {
 	std::string nick;
