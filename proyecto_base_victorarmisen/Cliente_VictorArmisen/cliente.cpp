@@ -13,6 +13,7 @@ using namespace sf;
 struct Peer {
 	std::string ip;
 	unsigned short port;
+	TcpSocket* socket;
 };
 
 std::vector<Peer> peers;
@@ -65,6 +66,41 @@ int main()
 			peers.push_back(peer);
 		}
 		cout << "Numero de conexiones: " << peers.size() << endl;
+	}
+	for (size_t i = 0; i < peers.size(); i++)
+	{
+		peers[i].socket = new TcpSocket();
+		if (peers[i].socket->connect(peers[i].ip, peers[i].port) != Socket::Done) {
+			cout << "Conexion fallada" << endl;
+		}
+		else {
+			cout << "Conexion completada" << endl;
+		}
+	}
+	/// <summary>
+	/// El cliente ya esta conectado y espera a nuevas entradas. 
+	/// </summary>
+	/// <returns></returns>
+	TcpListener listener;		
+	if (listener.listen(listener.getLocalPort()) != Socket::Done) {
+		cout << "Puerto no disponible" << endl;
+	}
+	else {
+		cout << "Puerto abierto" << endl;
+	}
+	while (true) {
+		TcpSocket* socket = new TcpSocket();
+		if (listener.accept(*socket) != Socket::Done) {
+			cout << "Error al conectarse" << endl;
+		}
+		else {
+			Peer peerNuevo;
+			peerNuevo.ip = socket->getRemoteAddress().toString();
+			peerNuevo.port = socket->getRemotePort();
+			peerNuevo.socket = socket;
+			peers.push_back(peerNuevo);
+			cout << "Nuevo peer entrante: " << "IP: " << peerNuevo.ip << endl;
+		}
 	}
 	return 0;
 }

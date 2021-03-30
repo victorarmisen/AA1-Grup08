@@ -53,10 +53,6 @@ sf::Packet& operator>> (sf::Packet& _packet, Peer& _struct)
 
 int main() 
 {
-	//std::string nick;
-	//std::vector<std::string> jugadores;
-	//std::thread tAll(TratarTodosLosClientes, &jugadores);
-
 	sf::TcpListener dispacher; 
 	sf::TcpSocket incoming;
 
@@ -78,7 +74,9 @@ int main()
 		else {
 			cout << "Conectado jugador con IP" << incoming.getRemoteAddress() << endl;
 			sf::Packet packet;
-			packet << jugadores.size();
+			int size = jugadores.size();
+			packet << size;
+			cout << "TAMAÑO " << jugadores.size() << endl;
 			if (jugadores.size() == 0) {
 				cout << "No hay jugadores todavia" << endl;
 			}
@@ -99,31 +97,5 @@ int main()
 			cout << "Numero de jugadores conectados" << jugadores.size() << endl;
 		}
 	}
-
-	//sf::Packet packet;
-
-	//sf::Socket::Status status2 = incoming.receive(packet);
-	//
-	//if (status != sf::Socket::Done) {
-	//	cout << "El paquete no se ha recibido" << endl;
-	//}
-	//else {
-	//	std::string data; 
-	//	packet >> data;
-	//	cout << "Info received from the player: " << data << endl;
-	//}
-
-	//do {
-	//	//std::cin >> nick;
-	//	//if (nick == "exit") break;
-	//	//jugadores.push_back(nick);
-	//	//std::thread t(TratarCliente, nick, &jugadores);
-	//	//t.detach();
-	//} while (true);
-	/*
-	Thread pal: While(true) añadimos un jugador cuando se conecte. 
-	Funcion Tratar cliente(nick)-> Imprime 10 veces el nombre del jugador. Y despues hace erase. 
-	Thread -> Jugadores conectados ahora mismo. Print todos los jugadores. 
-	*/
 	return 0;
 }
