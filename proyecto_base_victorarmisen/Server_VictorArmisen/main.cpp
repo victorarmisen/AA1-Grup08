@@ -9,48 +9,56 @@
 using std::cout;
 using std::endl;
 
-std::mutex mtxJugadores;
-
-void TratarTodosLosClientes(std::vector<std::string>* jugadores) {
-	while (true) {
-		for (size_t i = 0; i < jugadores->size(); i++)
-		{
-			cout << "Jugador " << " " << i << ": " << jugadores->at(i) << endl;
-		}
-		std::this_thread::sleep_for(std::chrono::seconds(5));
-	}
-}
-void TratarCliente(std::string nick, std::vector<std::string>* jugadores) {
-	for (size_t i = 0; i < 10; i++)
-	{
-		cout << "Jugador con el nombre: " << nick << endl;
-		std::this_thread::sleep_for(std::chrono::seconds(1));
-	}
-	mtxJugadores.lock();
-	for (size_t i = 0; i < jugadores->size(); i++)
-	{
-		if (jugadores->at(i) == nick) {
-			jugadores->erase(jugadores->begin() + i);
-			break;
-		}
-	}
-	mtxJugadores.unlock();
-}
-
+//void TratarTodosLosClientes(std::vector<std::string>* jugadores) {
+//	while (true) {
+//		for (size_t i = 0; i < jugadores->size(); i++)
+//		{
+//			cout << "Jugador " << " " << i << ": " << jugadores->at(i) << endl;
+//		}
+//		std::this_thread::sleep_for(std::chrono::seconds(5));
+//	}
+//}
+//void TratarCliente(std::string nick, std::vector<std::string>* jugadores) {
+//	for (size_t i = 0; i < 10; i++)
+//	{
+//		cout << "Jugador con el nombre: " << nick << endl;
+//		std::this_thread::sleep_for(std::chrono::seconds(1));
+//	}
+//	mtxJugadores.lock();
+//	for (size_t i = 0; i < jugadores->size(); i++)
+//	{
+//		if (jugadores->at(i) == nick) {
+//			jugadores->erase(jugadores->begin() + i);
+//			break;
+//		}
+//	}
+//	mtxJugadores.unlock();
+//}
 
 struct Peer {
-	sf::IpAddress ip;
+	std::string ip;
 	unsigned short port;
 };
 
+std::vector<Peer> jugadores;
+
+sf::Packet& operator <<(sf::Packet& _packet, const Peer& _struct)
+{ 
+	return _packet << _struct.ip << _struct.port; 
+}
+sf::Packet& operator>> (sf::Packet& _packet, Peer& _struct)
+{ 
+	return _packet >> _struct.ip >> _struct.port; 
+}
 
 int main() 
 {
-	std::string nick;
-	std::vector<std::string> jugadores;
+	//std::string nick;
+	//std::vector<std::string> jugadores;
 	//std::thread tAll(TratarTodosLosClientes, &jugadores);
 
 	sf::TcpListener dispacher; 
+	sf::TcpSocket incoming;
 
 	sf::Socket::Status status = dispacher.listen(5000);
 
@@ -62,27 +70,48 @@ int main()
 		cout << "Vinculado" << endl;
 	}
 
-	sf::TcpSocket incoming;
-	
-	if (dispacher.accept(incoming) != sf::Socket::Done) {
-		cout << "Error al conectarse" << endl;
-	}
-	else {
-		cout << "Conectado" << endl;
+	while (true) 
+	{
+		if (dispacher.accept(incoming) != sf::Socket::Done) {
+			cout << "Error al conectarse" << endl;
+		}
+		else {
+			cout << "Conectado jugador con IP" << incoming.getRemoteAddress() << endl;
+			sf::Packet packet;
+			packet << jugadores.size();
+			if (jugadores.size() == 0) {
+				cout << "No hay jugadores todavia" << endl;
+			}
+			else {
+				for (size_t i = 0; i < jugadores.size(); i++)
+				{
+					packet << jugadores[i];
+				}
+			}		
+			sf::Socket::Status statusCliente = incoming.send(packet);
+			if (statusCliente != sf::Socket::Done) {
+				cout << "Fuck" << endl;
+			}
+			else {
+				cout << "PAQUETE enviado." << endl;
+			}
+			jugadores.push_back({ incoming.getRemoteAddress().toString(), incoming.getRemotePort() });
+			cout << "Numero de jugadores conectados" << jugadores.size() << endl;
+		}
 	}
 
-	sf::Packet packet;
+	//sf::Packet packet;
 
-	sf::Socket::Status status2 = incoming.receive(packet);
-	
-	if (status != sf::Socket::Done) {
-		cout << "El paquete no se ha recibido" << endl;
-	}
-	else {
-		std::string data; 
-		packet >> data;
-		cout << "Info received from the player: " << data << endl;
-	}
+	//sf::Socket::Status status2 = incoming.receive(packet);
+	//
+	//if (status != sf::Socket::Done) {
+	//	cout << "El paquete no se ha recibido" << endl;
+	//}
+	//else {
+	//	std::string data; 
+	//	packet >> data;
+	//	cout << "Info received from the player: " << data << endl;
+	//}
 
 	//do {
 	//	//std::cin >> nick;
