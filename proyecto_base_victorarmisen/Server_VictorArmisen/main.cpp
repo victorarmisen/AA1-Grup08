@@ -73,6 +73,8 @@ int main()
 		}
 		else {
 			cout << "Conectado jugador con IP" << incoming.getRemoteAddress() << endl;
+			jugadores.push_back({ incoming.getRemoteAddress().toString(), incoming.getRemotePort() });
+			cout << "Numero de jugadores conectados" << jugadores.size() << endl;
 			sf::Packet packet;
 			int size = jugadores.size();
 			packet << size;
@@ -93,8 +95,7 @@ int main()
 			else {
 				cout << "PAQUETE enviado." << endl;
 			}
-			jugadores.push_back({ incoming.getRemoteAddress().toString(), incoming.getRemotePort() });
-			cout << "Numero de jugadores conectados" << jugadores.size() << endl;
+			incoming.disconnect();
 		}
 	}
 	return 0;

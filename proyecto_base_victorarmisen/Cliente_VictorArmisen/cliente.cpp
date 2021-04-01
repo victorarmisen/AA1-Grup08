@@ -67,7 +67,7 @@ int main()
 		}
 		cout << "Numero de conexiones: " << peers.size() << endl;
 	}
-	for (size_t i = 0; i < peers.size(); i++)
+	for (size_t i = 0; i < peers.size() - 1; i++)
 	{
 		peers[i].socket = new TcpSocket();
 		if (peers[i].socket->connect(peers[i].ip, peers[i].port) != Socket::Done) {
@@ -81,8 +81,9 @@ int main()
 	/// El cliente ya esta conectado y espera a nuevas entradas. 
 	/// </summary>
 	/// <returns></returns>
-	TcpListener listener;		
-	if (listener.listen(listener.getLocalPort()) != Socket::Done) {
+	TcpListener listener;	
+	//peers[(int)peers.size() - 1].port
+	if (listener.listen(socket->getLocalPort()) != Socket::Done) {
 		cout << "Puerto no disponible" << endl;
 	}
 	else {
@@ -92,6 +93,7 @@ int main()
 		TcpSocket* socket = new TcpSocket();
 		if (listener.accept(*socket) != Socket::Done) {
 			cout << "Error al conectarse" << endl;
+			break;
 		}
 		else {
 			Peer peerNuevo;
