@@ -7,26 +7,38 @@
 #include <vector>
 #include <time.h>
 
+using std::cout;
+using std::endl;
 
 class BSS
 {
-private:
+
+public:
+	BSS();
+	~BSS();
+	void Run();
+
 	struct Peer {
 		std::string ip;
 		unsigned short port;
 	};
 
+private:
+	
 	std::vector<Peer> jugadores;
 
-	sf::Packet& operator <<(sf::Packet& _packet, const Peer& _struct)
-	{
-		return _packet << _struct.ip << _struct.port;
-	}
-	sf::Packet& operator>> (sf::Packet& _packet, Peer& _struct)
-	{
-		return _packet >> _struct.ip >> _struct.port;
-	}
+	//Network Variables
+	sf::TcpListener dispacher;
+	sf::TcpSocket incoming;
 
+	//Server control variables
+	bool server_running;
+
+
+	
+
+
+	
 
 };
 
