@@ -1,5 +1,16 @@
 #include "BSS.h"
 
+
+
+sf::Packet& operator <<(sf::Packet& _packet, const BSS::Peer& _struct)
+{
+	return _packet << _struct.ip << _struct.port;
+}
+sf::Packet& operator>> (sf::Packet& _packet, BSS::Peer& _struct)
+{
+	return _packet >> _struct.ip >> _struct.port;
+}
+
 BSS::BSS() {
 	sf::Socket::Status status = dispacher.listen(5000);
 
@@ -53,11 +64,4 @@ void BSS::Run()
 	}	
 }
 
-	sf::Packet& operator <<(sf::Packet & _packet, const BSS::Peer & _struct)
-	{
-		return _packet << _struct.ip << _struct.port;
-	}
-	sf::Packet& operator>> (sf::Packet & _packet, BSS::Peer & _struct)
-	{
-		return _packet >> _struct.ip >> _struct.port;
-	}
+	

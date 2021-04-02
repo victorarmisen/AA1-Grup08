@@ -1,31 +1,12 @@
-#include <iostream>
-#include <SFML/Network.hpp>
-#include <SFML/Graphics.hpp>
-#include <thread>
-#include <mutex>
-#include <vector>
-#include <time.h>
+#include "clientP2P.h"
 
-using std::cout;
-using std::endl;
-using namespace sf;
 
-struct Peer {
-	std::string ip;
-	unsigned short port;
-	TcpSocket* socket;
-};
 
-std::vector<Peer> peers;
 
-sf::Packet& operator <<(sf::Packet& _packet, const Peer& _struct)
-{
-	return _packet << _struct.ip << _struct.port;
-}
-sf::Packet& operator>> (sf::Packet& _packet, Peer& _struct)
-{
-	return _packet >> _struct.ip >> _struct.port;
-}
+
+
+
+
 
 int main()
 {
@@ -66,6 +47,9 @@ int main()
 			peers.push_back(peer);
 		}
 		cout << "Numero de conexiones: " << peers.size() << endl;
+		
+		socket->disconnect();
+		cout << "Escucho por el puerto: " << (peers[(int)peers.size() - 1].port).toString() << endl;
 	}
 	for (size_t i = 0; i < peers.size() - 1; i++)
 	{
