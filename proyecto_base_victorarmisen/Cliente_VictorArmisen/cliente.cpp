@@ -13,7 +13,7 @@ using namespace sf;
 
 #define BSS_IP "localhost"
 #define BSS_PORT 50000
-#define MAX_PLAYERS 3
+#define MAX_PLAYERS 2
 
 std::vector<TcpSocket*> peerSockets;
 unsigned short ownPort;
@@ -30,6 +30,102 @@ sf::Packet& operator <<(sf::Packet& _packet, const Data& _struct) {
 }
 sf::Packet& operator>> (sf::Packet& _packet, Data& _struct) {
 	return _packet >> _struct.ip >> _struct.port;
+}
+
+void Chat() {
+
+	sf::Vector2i screenDimensions(800, 600);
+	sf::RenderWindow window;
+	window.create(sf::VideoMode(screenDimensions.x, screenDimensions.y), "Chat");
+
+	sf::String mensaje = " >";
+
+	sf::Font font;
+	if (!font.loadFromFile("calibri.ttf"))
+	{
+		std::cout << "Can't load the font file" << std::endl;
+	}
+
+	sf::Text chattingText(mensaje, font, 14);
+	chattingText.setFillColor(sf::Color(0, 160, 0));
+	chattingText.setStyle(sf::Text::Bold);
+
+	sf::Text text(mensaje, font, 14);
+	text.setFillColor(sf::Color(0, 160, 0));
+	text.setStyle(sf::Text::Bold);
+	text.setPosition(0, 560);
+
+	sf::RectangleShape separator(sf::Vector2f(800, 5));
+	separator.setFillColor(sf::Color(200, 200, 200, 255));
+	separator.setPosition(0, 550);
+
+
+	//char buffer[100];
+	//size_t bytesReceived;
+
+	Packet msgPacket;
+
+	while (window.isOpen())
+	{
+		sf::Event evento;
+		while (window.pollEvent(evento))
+		{
+			switch (evento.type)
+			{
+			case sf::Event::Closed:
+				window.close();
+				break;
+			case sf::Event::KeyPressed:
+				if (evento.key.code == sf::Keyboard::Escape)
+					window.close();
+				else if (evento.key.code == sf::Keyboard::Return)
+				{
+					std::string messageToSend = mensaje;
+
+					//------------------ Send ------------------
+					msgPacket << messageToSend;
+
+					for (int i = 0; i < peerSockets.size(); i++)
+					{				
+						peerSockets[i]->send(msgPacket);
+					}
+					mensaje = ">";
+				}
+				break;
+			case sf::Event::TextEntered:
+				if (evento.text.unicode >= 32 && evento.text.unicode <= 126)
+					mensaje += (char)evento.text.unicode;
+				else if (evento.text.unicode == 8 && mensaje.getSize() > 0)
+					mensaje.erase(mensaje.getSize() - 1, mensaje.getSize());
+				break;
+			}
+		}
+		window.draw(separator);
+
+		//------------------ Receive------------------
+
+		Packet arrivePacket;
+
+		for (int i = 0; i < peerSockets.size(); i++)
+		{
+			Socket::Status status = peerSockets[i]->receive(msgPacket);
+
+			if (status != Socket::Status::Done) {
+				
+			}
+			else {
+				std::string chatting;
+				msgPacket >> chatting;
+				cout << "El contenido del paquete es: " << chatting << endl;
+				chattingText.setPosition(sf::Vector2f(0, 20 * i));
+				chattingText.setString(chatting);
+			}
+		}
+		window.draw(text);
+		window.display();
+		window.clear();
+	}
+
 }
 
 int main()
@@ -111,6 +207,13 @@ int main()
 			}
 		}
 	}
+
+	for (int i = 0; i < peerSockets.size(); i++)
+	{
+		peerSockets[i]->setBlocking(false);
+	}
+
+	Chat();
 
 	return 0;
 }

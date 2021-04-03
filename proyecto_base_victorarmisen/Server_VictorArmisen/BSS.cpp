@@ -10,7 +10,7 @@
 using std::cout;
 using std::endl;
 
-#define MAX_PLAYERS 3
+#define MAX_PLAYERS 2
 #define LISTEN_PORT 50000
 
 struct Data {
