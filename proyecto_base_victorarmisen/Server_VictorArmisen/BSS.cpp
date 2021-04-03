@@ -1,67 +1,70 @@
-#include "BSS.h"
+#include <iostream>
+#include <SFML/Network.hpp>
+#include <SFML/Graphics.hpp>
+#include <thread>
+#include <mutex>
+#include <vector>
+#include <Windows.h>
+#include <time.h>
 
+using std::cout;
+using std::endl;
 
+#define MAX_PLAYERS 3
+#define LISTEN_PORT 50000
 
-sf::Packet& operator <<(sf::Packet& _packet, const BSS::Peer& _struct)
-{
+struct Data {
+	sf::String ip;
+	sf::Uint16 port;
+};
+
+std::vector<Data> peers;
+
+sf::Packet& operator <<(sf::Packet& _packet, const Data& _struct) {
 	return _packet << _struct.ip << _struct.port;
 }
-sf::Packet& operator>> (sf::Packet& _packet, BSS::Peer& _struct)
-{
+sf::Packet& operator>> (sf::Packet& _packet, Data& _struct) {
 	return _packet >> _struct.ip >> _struct.port;
 }
 
-BSS::BSS() {
-	sf::Socket::Status status = dispacher.listen(5000);
+int main() {
 
-	if (status != sf::Socket::Done) {
-		//No se ha podido vincular. 
-		std::cout << "No se ha podido vincular el puerto" << std::endl;
-	}
-	else {
-		std::cout << "Vinculado" << std::endl;
-	}
-	server_running = false;
-}
+	std::vector<Data> direcciones;
 
-BSS::~BSS()
-{
-}
+	sf::TcpListener listener;
+	std::cout << "Escuchando a la espera de jugadores..." << endl;
 
-void BSS::Run()
-{
-	while (true)
+	sf::Socket::Status status = listener.listen(LISTEN_PORT);
+
+	if (status != sf::Socket::Status::Done)
 	{
-		if (dispacher.accept(incoming) != sf::Socket::Done) {
-			cout << "Error al conectarse" << endl;
-		}
-		else {
-			cout << "Conectado jugador con IP" << incoming.getRemoteAddress() << endl;
-			jugadores.push_back({ incoming.getRemoteAddress().toString(), incoming.getRemotePort() });
-			cout << "Numero de jugadores conectados" << jugadores.size() << endl;
-			sf::Packet packet;
-			int size = jugadores.size();
-			packet << size;
-			cout << "TAMAÑO " << jugadores.size() << endl;
-			if (jugadores.size() == 0) {
-				cout << "No hay jugadores todavia" << endl;
+		std::cout << "No se ha podido escuchar por el puerto" << LISTEN_PORT << std::endl;
+	}
+	else
+	{
+		for (int i = 0; i < MAX_PLAYERS; i++)
+		{
+			sf::TcpSocket sock;
+			if (listener.accept(sock) != sf::Socket::Status::Done) {
+				std::cout << "No se ha podido aceptar la conexión " << std::endl;
 			}
-			else {
-				for (size_t i = 0; i < jugadores.size(); i++)
+			else
+			{
+				std::cout << "Conectado con: " << sock.getRemoteAddress() << ":" << sock.getRemotePort() << std::endl;
+				sf::Packet packet;
+				packet << (sf::Int8)direcciones.size();
+				for (int dir = 0; dir < direcciones.size(); dir++)
 				{
-					packet << jugadores[i];
+					packet << direcciones[dir];
 				}
+				sock.send(packet);
+				direcciones.push_back({ sock.getRemoteAddress().toString(), sock.getRemotePort() });
+				sock.disconnect();
 			}
-			sf::Socket::Status statusCliente = incoming.send(packet);
-			if (statusCliente != sf::Socket::Done) {
-				cout << "Fuck" << endl;
-			}
-			else {
-				cout << "PAQUETE enviado." << endl;
-			}
-			incoming.disconnect();
 		}
-	}	
-}
 
-	
+	}
+	listener.close();
+	system("pause");
+	return 0;
+}

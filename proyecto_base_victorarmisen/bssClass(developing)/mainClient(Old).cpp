@@ -22,12 +22,6 @@ int main()
 		cout << "Connected to the BSS server" << endl;
 		portBSS = std::to_string(socket->getLocalPort());
 		cout << "The port: " << portBSS << endl;
-		//Recivir todos los datos, de los clientes que hay en partida. 
-		//Desconectarse del BSS. 
-		//socket->disconnect();
-		//TcpSocket* clientNuevo = new TcpSocket();
-		//Socket::Status status = clientNuevo->connect("192.168.1.61", 5001);
-		//peers.push_back(clientNuevo);
 	}
 	Packet packet;
 	Socket::Status status3 = socket->receive(packet);
