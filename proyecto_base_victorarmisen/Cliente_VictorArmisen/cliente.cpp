@@ -23,6 +23,16 @@ struct Data {
 	Uint16 port;
 };
 
+enum Familia {Arabe, Bantu, China, Esquimal, India, Mexicana, Tirolesa};
+enum Tipo {Abuelo, Abuela, Padre, Madre, Hijo, Hija};
+
+struct Carta {
+	Familia familia;
+	Tipo tipo;
+};
+
+std::vector<Carta> cartas;
+
 std::vector<Data> peers;
 
 sf::Packet& operator <<(sf::Packet& _packet, const Data& _struct) {
@@ -30,6 +40,46 @@ sf::Packet& operator <<(sf::Packet& _packet, const Data& _struct) {
 }
 sf::Packet& operator>> (sf::Packet& _packet, Data& _struct) {
 	return _packet >> _struct.ip >> _struct.port;
+}
+
+std::string DecirFamilia(Familia familia) {
+	std::string nombre = "";
+	switch (familia) {
+	case 0: nombre = "Arabe";
+		break;
+	case 1: nombre = "Bantu";
+		break;
+	case 2: nombre = "China";
+		break;
+	case 3: nombre = "Esquimal";
+		break;
+	case 4: nombre = "India";
+		break;
+	case 5: nombre = "Mexicana";
+		break;
+	case 6: nombre = "Tirolesa";
+		break;
+	}
+	return nombre;
+}
+
+std::string DecirTipo(Tipo familia) {
+	std::string nombre = "";
+	switch (familia) {
+		case 0: nombre = "Abuelo";
+			break;
+		case 1: nombre = "Abuela";
+			break;
+		case 2: nombre = "Padre";
+			break;
+		case 3: nombre = "Madre";
+			break;
+		case 4: nombre = "Hijo";
+			break;
+		case 5: nombre = "Hija";
+			break;
+	}
+	return nombre;
 }
 
 void Chat() {
@@ -59,9 +109,20 @@ void Chat() {
 	separator.setFillColor(sf::Color(200, 200, 200, 255));
 	separator.setPosition(0, 550);
 
+	//for (int i = 0; i < 7; i++)
+	//{
+	//	Carta carta;
+	//	carta.familia = static_cast<Familia>(rand() % Tirolesa);
+	//	carta.tipo = static_cast<Tipo>(rand() % Hija);
+	//	cartas.push_back(carta);
+	//}
 
-	//char buffer[100];
-	//size_t bytesReceived;
+	//cout << "Mis cartas son: " << endl;
+	//for (int i = 0; i < cartas.size(); i++)
+	//{
+	//	cout << "Carta " << i << " " << DecirFamilia(cartas[i].familia) << " del tipo: "
+	//		<< DecirTipo(cartas[i].tipo) << endl;
+	//}
 
 	Packet msgPacket;
 
@@ -121,6 +182,8 @@ void Chat() {
 				chattingText.setString(chatting);
 			}
 		}
+		std::string mensaje_ = mensaje + "_";
+		text.setString(mensaje_);
 		window.draw(text);
 		window.display();
 		window.clear();
@@ -214,6 +277,7 @@ int main()
 	}
 
 	Chat();
+
 
 	return 0;
 }
