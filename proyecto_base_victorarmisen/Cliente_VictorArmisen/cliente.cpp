@@ -231,12 +231,57 @@ void Chat() {
 				if (comandosReceive[0] == "Exit")
 					checkCmd = 3;
 
+				std::string fam;
+				std::string type;
+
 				switch (checkCmd) {
 					case 1: 
+						//Pedir carta a jugador especifico. 
+						//Esperar recepción de si la tiene o no. 
+						//Si es que si, recevirla y añadirla a nuestro mazo. 
+						//Si es que no, se cambia el turno. Lo cambiamos aqui?
+
+						fam = comandosReceive[1];
+						type = comandosReceive[2];
+
+						int famObjective = 0;
+						int tipoObjective = 0;
+
+						if (fam == "Arabe")
+							famObjective = 1;
+						if (fam == "Abuelo")
+							tipoObjective = 1;
+
+						//Comprobar si esta dentro de tu mazo. 
+						bool peticion = false;
+						Carta enviar;
+						for (int i = 0; i < cartas.size(); i++)
+						{
+							if (cartas[i].familia == famObjective &&
+								cartas[i].tipo == tipoObjective) {
+								//Carta encontrada en mi mazo. 
+								enviar = cartas[i];
+								cartas.erase(cartas.begin() + i);
+								peticion = true;
+								break;
+							}
+						}
+
+						//Enviar de vuelta que si o no al jugador de la petición. 
+						if (peticion) {
+							//Enviamos al socket de vuelta, que si la tenemos y se la enviamos. 
+							Packet packet;
+							std::string msg = "Si tengo la carta, te la doy: ";
+							packet << msg;
+							/*peerSockets.send(packet);*/ //Crear mapa para indetificarlo más facil. 
+						}
 						break;
 					case 2:
+						//Enviar un msg a cualquier jugador especifico. 
+						//O enviar un mensaje global simplemente? 
 						break;
 					case 3:
+						//Desconnectarnos de la partida. 
 						break;
 				}
 
