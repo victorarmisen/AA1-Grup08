@@ -11,7 +11,7 @@ using std::cout;
 using std::endl;
 
 #define MAX_PLAYERS 2
-#define LISTEN_PORT 50000
+#define LISTEN_PORT 5001
 
 struct Data {
 	sf::String ip;

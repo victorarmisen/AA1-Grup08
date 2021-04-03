@@ -7,12 +7,13 @@
 #include <Windows.h>
 #include <time.h>
 
+
 using std::cout;
 using std::endl;
 using namespace sf;
 
 #define BSS_IP "localhost"
-#define BSS_PORT 50000
+#define BSS_PORT 5001
 #define MAX_PLAYERS 2
 
 std::vector<TcpSocket*> peerSockets;
@@ -82,13 +83,26 @@ std::string DecirTipo(Tipo familia) {
 	return nombre;
 }
 
+//std::vector<std::string> Split(std::string msg) {
+//	int init = 0;
+//	int end = 0;
+//	std::vector<std::string> palabras;
+//	while (end = msg.find(" ", init), end >= 0)
+//	{
+//		std::string s = msg.substr(init, end - init);
+//		palabras.push_back(s);
+//		init = end + 1;
+//	}
+//	return palabras;
+//}
+
 void Chat() {
 
 	sf::Vector2i screenDimensions(800, 600);
 	sf::RenderWindow window;
 	window.create(sf::VideoMode(screenDimensions.x, screenDimensions.y), "Chat");
 
-	sf::String mensaje = " >";
+	sf::String mensaje = "";
 
 	sf::Font font;
 	if (!font.loadFromFile("calibri.ttf"))
@@ -126,6 +140,8 @@ void Chat() {
 
 	Packet msgPacket;
 
+	std::vector<std::string> comandosReceive;
+
 	while (window.isOpen())
 	{
 		sf::Event evento;
@@ -141,16 +157,33 @@ void Chat() {
 					window.close();
 				else if (evento.key.code == sf::Keyboard::Return)
 				{
-					std::string messageToSend = mensaje;
+					std::string messageToSend = mensaje.toAnsiString();
+					std::string commando = "";
+					std::string familia = "";
+					std::string tipo = "";
 
+
+					std::istringstream iss(messageToSend);
+					std::vector<std::string> results((std::istream_iterator<std::string>(iss)),
+						std::istream_iterator<std::string>());
+
+					int size = 0;
+					size = results.size();
+					msgPacket << size;
+
+					cout << "Palabras a decir" << endl;
+					for (int i = 0; i < size; i++)
+					{
+						cout << results[i] << endl;
+						msgPacket << results[i];
+					}
 					//------------------ Send ------------------
-					msgPacket << messageToSend;
 
 					for (int i = 0; i < peerSockets.size(); i++)
 					{				
 						peerSockets[i]->send(msgPacket);
 					}
-					mensaje = ">";
+					//mensaje = ">";
 				}
 				break;
 			case sf::Event::TextEntered:
@@ -171,15 +204,44 @@ void Chat() {
 		{
 			Socket::Status status = peerSockets[i]->receive(msgPacket);
 
-			if (status != Socket::Status::Done) {
-				
+			if (status != Socket::Status::Done) {		
+				//cout << "Error reciviendo el paquete" << endl;
 			}
 			else {
 				std::string chatting;
-				msgPacket >> chatting;
-				cout << "El contenido del paquete es: " << chatting << endl;
+				int sizeOfMsg = 0;
+				msgPacket >> sizeOfMsg;
+				for (int i = 0; i < sizeOfMsg; i++)
+				{
+					std::string word;
+					msgPacket >> word;
+					comandosReceive.push_back(word);
+				}
+				/*msgPacket >> chatting;*/
+				cout << "El contenido del paquete es: " << comandosReceive[0] << endl;
+				std::string comando = comandosReceive[0];
+				const char* cmd = comando.c_str();
+
+				int checkCmd = 0;
+
+				if (comandosReceive[0] == "Pedir")
+					checkCmd = 1;
+				if (comandosReceive[0] == "Msg")
+					checkCmd = 2;
+				if (comandosReceive[0] == "Exit")
+					checkCmd = 3;
+
+				switch (checkCmd) {
+					case 1: 
+						break;
+					case 2:
+						break;
+					case 3:
+						break;
+				}
+
 				chattingText.setPosition(sf::Vector2f(0, 20 * i));
-				chattingText.setString(chatting);
+				chattingText.setString(comandosReceive[0]);
 			}
 		}
 		std::string mensaje_ = mensaje + "_";
